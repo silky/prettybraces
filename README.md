@@ -2,7 +2,7 @@
 
 RUN
 
-    Usage: [-h | --help] [STDIN |] prettybraces [FILE]*
+    Usage: [STDIN |] prettybraces [-h | --help] [FILE]*
 
 IN
 
