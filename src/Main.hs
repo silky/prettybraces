@@ -3,6 +3,7 @@
 module Main where
 
 import Text.Megaparsec
+import Text.Megaparsec.Prim
 import System.Environment
 import System.Exit
 import System.IO
@@ -23,8 +24,8 @@ goF f = readFile f >>= goT ("File: " ++ f)
 
 goT :: String -> String -> IO ()
 goT f t = case parse (items <* eof) f t
-         of Left  err -> hPutStrLn stderr (show err) >> exitFailure
-            Right res -> putStrLn $ unlines $ pps res
+         of Left  err -> hPrint stderr err >> exitFailure
+            Right res -> putStr $ unlines $ pps res
 
 help :: IO ()
 help = putStrLn "Usage: [STDIN |] prettybraces [-h | --help] [FILE]*"
@@ -41,10 +42,10 @@ type Items    = [Item]
 -- Constants:
 
 brackets :: [(String, String)]
-brackets = [("(",")"),("{","}"),("[","]")]
+brackets = [("(",")"),("{","}"),("[","]"),("<!--","-->")]
 
-bchars :: String
-bchars = concat $ brackets >>= (\(l,r) -> [l,r]) -- TODO: Allow string neg lookahead, eg, for html
+bStrings :: [String]
+bStrings = brackets >>= \(l,r) -> [l,r]
 
 -- Parser:
 
@@ -60,7 +61,10 @@ mkParser p@(l,r) = do
   return $ Group p is
 
 nonBracket :: Parsec String String
-nonBracket = some $ noneOf bchars
+nonBracket = untilP $ choice $ map string bStrings
+
+untilP :: MonadParsec s f Char => f a -> f String
+untilP end = some $ notFollowedBy end *> anyChar
 
 -- Printer:
 
@@ -71,13 +75,13 @@ pp' n (Right (Group (l,r) is)) = [blank n l]
                               ++ [blank n r]
 
 pps' :: Int -> Items -> [String]
-pps' n is = concat $ map (pp' n) is
+pps' n = concatMap (pp' n)
 
 pps :: Items -> [String]
 pps = pps' 0
 
 blank :: Int -> String -> String
-blank n t = concat (replicate n "  ") ++ (cleanup t)
+blank n t = concat (replicate n "  ") ++ cleanup t
 
 cleanup :: String -> String
-cleanup = dropWhile (flip elem "\t ") . filter (/= '\n')
+cleanup = dropWhile (`elem` "\t ") . filter (/= '\n')
