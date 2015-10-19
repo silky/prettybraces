@@ -2,24 +2,28 @@
 
 Usage:
 
+RUN
+
+    Usage: [-h | --help] [STDIN |] prettybraces [FILE]*
+
 IN
 
-  {hello world ((whatever [you like]) can go) here} ...
+    {hello world ((whatever [you like]) can go) here} ...
 
 
 OUT
 
-  {
-    hello world 
-    (
+    {
+      hello world 
       (
-        whatever 
-        [
-          you like
-        ]
+        (
+          whatever 
+          [
+            you like
+          ]
+        )
+         can go
       )
-       can go
-    )
-     here
-  }
-   ...
+       here
+    }
+     ...
