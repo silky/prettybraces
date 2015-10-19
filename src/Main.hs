@@ -29,22 +29,24 @@ goT f t = case parse (items <* eof) f t
 help :: IO ()
 help = putStrLn "Usage: [-h | --help] [STDIN |] prettybraces [FILE]*"
 
--- Lib:
+-- Data:
 
---               Open    Close
-type Brackets = (String, String)
+type Open     = String
+type Close    = String
+type Brackets = (Open, Close)
+data Group    = Group Brackets Items deriving Show
+type Item     = Either String Group
+type Items    = [Item]
 
-data Group = Group Brackets Items deriving Show
-
-type Item = Either String Group
-
-type Items = [Item]
+-- Constants:
 
 brackets :: [(String, String)]
 brackets = [("(",")"),("{","}"),("[","]")]
 
 bchars :: String
 bchars = concat $ brackets >>= (\(l,r) -> [l,r]) -- TODO: Allow string neg lookahead, eg, for html
+
+-- Parser:
 
 items :: Parsec String Items
 items = many item
@@ -59,6 +61,8 @@ mkParser p@(l,r) = do
 
 nonBracket :: Parsec String String
 nonBracket = some $ noneOf bchars
+
+-- Printer:
 
 pp' :: Int -> Either String Group -> [String]
 pp' n (Left  s)                = [blank n s]
