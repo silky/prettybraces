@@ -27,7 +27,7 @@ goT f t = case parse (items <* eof) f t
             Right res -> putStrLn $ unlines $ pps res
 
 help :: IO ()
-help = putStrLn "Usage: [STDIN |] prettybraces [FILE]*"
+help = putStrLn "Usage: [-h | --help] [STDIN |] prettybraces [FILE]*"
 
 -- Lib:
 
@@ -73,4 +73,7 @@ pps :: Items -> [String]
 pps = pps' 0
 
 blank :: Int -> String -> String
-blank n t = concat (replicate n "  ") ++ t
+blank n t = concat (replicate n "  ") ++ (cleanup t)
+
+cleanup :: String -> String
+cleanup = dropWhile (flip elem "\t ") . filter (/= '\n')
