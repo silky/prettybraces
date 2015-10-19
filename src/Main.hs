@@ -27,7 +27,7 @@ goT f t = case parse (items <* eof) f t
             Right res -> putStrLn $ unlines $ pps res
 
 help :: IO ()
-help = putStrLn "Usage: [-h | --help] [STDIN |] prettybraces [FILE]*"
+help = putStrLn "Usage: [STDIN |] prettybraces [-h | --help] [FILE]*"
 
 -- Data:
 
