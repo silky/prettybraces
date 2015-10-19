@@ -22,7 +22,7 @@ goF :: String -> IO ()
 goF f = readFile f >>= goT ("File: " ++ f)
 
 goT :: String -> String -> IO ()
-goT f t = case parse items f t
+goT f t = case parse (items <* eof) f t
          of Left  err -> hPutStrLn stderr (show err) >> exitFailure
             Right res -> putStrLn $ unlines $ pps res
 
