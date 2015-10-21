@@ -42,5 +42,4 @@ OUT
 
 # TODO
 
-* Parsers are currently regenerated on the fly from brackets option.
-  This would be better done by pre-compiling them.
+* Provide options for compact output, etc.
