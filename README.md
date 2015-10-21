@@ -39,3 +39,8 @@ OUT
 * <http://sordina.binaries.s3.amazonaws.com/prettybraces-0.1.0.0-MacOSX-10.9.5-13F1077.zip>
 * <http://sordina.binaries.s3.amazonaws.com/prettybraces-0.1.0.0-MacOSX-10.9.5-13F1077.zip>
 
+
+# TODO
+
+* Parsers are currently regenerated on the fly from brackets option.
+  This would be better done by pre-compiling them.

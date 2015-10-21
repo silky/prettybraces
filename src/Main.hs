@@ -47,14 +47,15 @@ filesArg = A.many (argument str (metavar "FILES..."))
 -- Driver:
 
 go :: [Braces] -> [String] -> IO ()
-go bs [] = getContents >>= goT bs "STDIN"
-go bs fs = mapM_ (goF bs) fs
+go bs fs = case fs of
+  [] -> getContents >>= goT (makeItem bs) "STDIN"
+  _  -> mapM_ (goF (makeItem bs)) fs
 
-goF :: [Braces] -> String -> IO ()
-goF bs f = readFile f >>= goT bs ("File: " ++ f)
+goF :: Parsec String Item -> FilePath -> IO ()
+goF item f = readFile f >>= goT item ("File: " ++ f)
 
-goT :: [Braces] -> String -> String -> IO ()
-goT bs f t = case parse (items bs <* eof) f t
+goT :: Stream s t => Parsec s Item -> String -> s -> IO ()
+goT item f t = case parse (many item <* eof) f t
         of Left  err -> hPrint stderr err >> exitFailure
            Right res -> putStr $ unlines $ pps res
 
@@ -71,22 +72,22 @@ type Item   = Either String Group
 
 -- Parser:
 
-items :: [Braces] -> Parsec String [Item]
-items bs = many (item bs)
+makeItem :: [Braces] -> Parsec String (Either String Group)
+makeItem bs = item
+  where
+  item       =  moreBraces <|> nonBraces
+  moreBraces = choice $ map (fmap Right . mkParser item) bs
+  nonBraces  = fmap Left (nonBracket bs)
 
-item :: [Braces] -> Parsec String Item
-item bs = choice (map (fmap Right . mkParser bs) bs) <|> fmap Left (nonBracket bs)
-
-mkParser :: [Braces] -> (String, String) -> Parsec String Group
-mkParser bs p@(l,r) = do
-  is <- between (string l) (string r) (items bs)
+mkParser :: MonadParsec s m Char => m Item -> Braces -> m Group
+mkParser item p@(l,r) = do
+  is <- between (string l) (string r) (many item)
   return $ Group p is
 
 nonBracket :: [Braces] -> Parsec String String
 nonBracket bs = untilP $ choice $ map string bStrings
   where
   bStrings = bs >>= \(l,r) -> [l,r]
-
 
 untilP :: MonadParsec s f Char => f a -> f String
 untilP end = some $ notFollowedBy end *> anyChar
