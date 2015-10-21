@@ -47,9 +47,8 @@ filesArg = A.many (argument str (metavar "FILES..."))
 -- Driver:
 
 go :: [Braces] -> [String] -> IO ()
-go bs fs = case fs of
-  [] -> getContents >>= goT (makeItem bs) "STDIN"
-  _  -> mapM_ (goF (makeItem bs)) fs
+go bs [] = getContents >>= goT (makeItem bs) "STDIN"
+go bs fs = mapM_ (goF (makeItem bs)) fs
 
 goF :: Parsec String Item -> FilePath -> IO ()
 goF item f = readFile f >>= goT item ("File: " ++ f)
