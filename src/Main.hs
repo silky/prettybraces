@@ -74,13 +74,13 @@ type Item   = Either String Group
 makeItem :: [Braces] -> Parsec String (Either String Group)
 makeItem bs = item
   where
-  item       =  moreBraces <|> nonBraces
-  moreBraces = choice $ map (fmap Right . mkParser item) bs
-  nonBraces  = fmap Left (nonBracket bs)
+  item       = moreBraces <|> nonBraces
+  moreBraces = fmap Right $ choice $ map (mkParser item) bs
+  nonBraces  = fmap Left  $ nonBracket bs
 
 mkParser :: MonadParsec s m Char => m Item -> Braces -> m Group
 mkParser item p@(l,r) = do
-  is <- between (string l) (string r) (many item)
+  is <- between (string l) (string r) (many (try item))
   return $ Group p is
 
 nonBracket :: [Braces] -> Parsec String String
